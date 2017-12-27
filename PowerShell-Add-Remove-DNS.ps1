@@ -3,14 +3,26 @@ cls
 # Define Variables
 $global:InterfaceIndexNum = 0
 <#************** Enter List of DNS IP's here for Adding **************#>
-$global:DNSEntries = "('10.200.160.179', '10.200.160.173', '10.200.200.33', '10.200.200.32')"
+#$global:DNSEntries = ('10.200.160.179', '10.200.160.173', '10.200.200.33', '10.200.200.32')
 
 <#************** Functions **************#>
-function GetInterfaceIndex {
+function AddRemove-DNSEntries ($x) {
     #Get-WmiObject win32_networkadapter -filter 'netconnectionstatus = 2' | select NetConnectionid, Name, Interfaceindex, NetConnectionStatus | Out-Host
-    Get-NetAdapter | Where-Object Status -eq 'Up' | Select-Object Name, InterfaceDescription,  @{Name="Interfaceindex";Expression={$_."ifIndex"}} , Status | Out-Host
+    Get-NetAdapter | Where-Object Status -eq 'Up' | Select-Object Name, InterfaceDescription, @{Name = "Interfaceindex"; Expression = {$_."ifIndex"}} , Status | Out-Host
 
-    $global:InterfaceIndexNum = Read-Host "Which Interfaceindex do you want to add DNS entries to?"
+    if ($x -eq 'Add') {
+        $global:InterfaceIndexNum = Read-Host "Which Interfaceindex do you want to Add DNS entries to?"
+        Set-DnsClientServerAddress -Interfaceindex $global:InterfaceIndexNum -ServerAddresses ('10.200.160.179', '10.200.160.173', '10.200.200.33', '10.200.200.32')
+        Write-Host "DNS Entries Added to InterfaceIndex $global:InterfaceIndexNum"
+        Get-NetIPConfiguration -InterfaceIndex $global:InterfaceIndexNum
+    }
+    
+    elseif ($x -eq 'Remove') {
+        $global:InterfaceIndexNum = Read-Host "Which Interfaceindex do you want to Remove DNS entries from?"
+        Set-DnsClientServerAddress -Interfaceindex $global:InterfaceIndexNum -ResetServerAddresses
+        Write-Host "DNS Entries Removed from InterfaceIndex $global:InterfaceIndexNum, DHCP restored"
+        Get-NetIPConfiguration -InterfaceIndex $global:InterfaceIndexNum
+    }
 }
 
 <#************** Begin Process **************#>
@@ -21,25 +33,13 @@ do {
     #(A)dd DNS Entries
     if ($WhichAction -eq 'A') {
         Write-Host 'Starting process to Add DNS Entries...'
-        GetInterfaceIndex
-
-        Set-DnsClientServerAddress -Interfaceindex $InterfaceIndexNum -ServerAddresses $global:DNSEntries
-
-        Write-Host "DNS Entries Added to InterfaceIndex $InterfaceIndexNum"
-
-        Get-NetIPConfiguration -InterfaceIndex $global:InterfaceIndexNum
+        AddRemove-DNSEntries('Add')
     }
 
     #(R)emove DNS Entries
     elseif ($WhichAction -eq 'R') {
         Write-Host 'Starting process to Remove DNS Entries and restore DHCP...'
-        GetInterfaceIndex
-
-        Set-DnsClientServerAddress -Interfaceindex $InterfaceIndexNum -ResetServerAddresses
-
-        Write-Host "DNS Entries Removed from InterfaceIndex $InterfaceIndexNum, DHCP restored"
-
-        ipconfig /all
+        AddRemove-DNSEntries('Remove')
     }
 
     #(E)xit the program
@@ -50,7 +50,6 @@ do {
 
     #Error catching
     else {
-        #$End = Read-Host -Prompt 'Invalid entry' + $WhichAction + ', press Enter to close...'
         Write-Warning "Invalid entry ""$WhichAction"", please enter A, R, or E..."
     }
 } until ($WhichAction -eq 'A' -or $WhichAction -eq 'R')
