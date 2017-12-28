@@ -1,36 +1,37 @@
-cls
-
-# Define Variables
+Clear-Host
 
 <#************** Enter List of DNS IP's here for Adding **************#>
-#$global:DNSEntries = ('10.200.160.179', '10.200.160.173', '10.200.200.33', '10.200.200.32')
+$Global:DNSEntries = '10.200.160.179', '10.200.160.173', '10.200.200.33', '10.200.200.32'
 
 <#************** Functions **************#>
 function AddRemove-DNSEntries ($x) {
-    $global:InterfaceIndexNum = 0
+    #Define Variables
+    $InterfaceIndexNum = 0
 
     #Get-WmiObject win32_networkadapter -filter 'netconnectionstatus = 2' | select NetConnectionid, Name, Interfaceindex, NetConnectionStatus | Out-Host
     
     #Display list of connected Network Adapters for user to find InterfaceIndexnum
-    Get-NetAdapter | Where-Object Status -eq 'Up' | Select-Object Name, InterfaceDescription, @{Name = "Interfaceindex"; Expression = {$_."ifIndex"}} , Status | Out-Host
+    Get-NetAdapter | Where-Object Status -eq 'Up' |
+        Select-Object Name, InterfaceDescription, @{Name = "Interfaceindex"; Expression = {$_."ifIndex"}} , Status | Out-Host
+
+    $InterfaceIndexNum = Read-Host "Which Interfaceindex do you want to $x DNS entries for?"
+    Write-Host ""
 
     #if Add was passed to function, run add DNS entries process
     if ($x -eq 'Add') {
-        $global:InterfaceIndexNum = Read-Host "Which Interfaceindex do you want to Add DNS entries to?"
-        Write-Host ""
-        Set-DnsClientServerAddress -Interfaceindex $global:InterfaceIndexNum -ServerAddresses ('10.200.160.179', '10.200.160.173', '10.200.200.33', '10.200.200.32')
-        Write-Host "DNS Entries Added to InterfaceIndex $global:InterfaceIndexNum" -ForegroundColor green
-        Get-NetIPConfiguration -InterfaceIndex $global:InterfaceIndexNum
+        Set-DnsClientServerAddress -Interfaceindex $InterfaceIndexNum -ServerAddresses ($Global:DNSEntries)
+        #Set-DnsClientServerAddress -Interfaceindex $InterfaceIndexNum -ServerAddresses ($Global:DNSEntries) -WhatIf
+        Write-Host "DNS Entries Added to InterfaceIndex $InterfaceIndexNum" -ForegroundColor green
     }
 
     #if Remove was passed to function, run remove DNS entries process
     elseif ($x -eq 'Remove') {
-        $global:InterfaceIndexNum = Read-Host "Which Interfaceindex do you want to Remove DNS entries from?"
-        Write-Host ""
-        Set-DnsClientServerAddress -Interfaceindex $global:InterfaceIndexNum -ResetServerAddresses
-        Write-Host "DNS Entries Removed from InterfaceIndex $global:InterfaceIndexNum, DHCP restored" -ForegroundColor green
-        Get-NetIPConfiguration -InterfaceIndex $global:InterfaceIndexNum
+        Set-DnsClientServerAddress -Interfaceindex $InterfaceIndexNum -ResetServerAddresses
+        #Set-DnsClientServerAddress -Interfaceindex $InterfaceIndexNum -ResetServerAddresses -WhatIf
+        Write-Host "DNS Entries Removed from InterfaceIndex $InterfaceIndexNum, DHCP restored" -ForegroundColor green
     }
+
+    Get-NetIPConfiguration -InterfaceIndex $InterfaceIndexNum
 }
 
 <#************** Begin Process **************#>
