@@ -25,16 +25,16 @@ function AddRemove-DNSEntries ($x) {
 
     #if Add was passed to function, run add DNS entries process
     if ($x -eq 'Add') {
-        Set-DnsClientServerAddress -Interfaceindex $InterfaceIndexNum -ServerAddresses ($Global:DNSEntries)
+        Set-DnsClientServerAddress -Interfaceindex $InterfaceIndexNum -ServerAddresses ($Global:DNSEntries) -ErrorAction Stop
         #Set-DnsClientServerAddress -Interfaceindex $InterfaceIndexNum -ServerAddresses ($Global:DNSEntries) -WhatIf
         Write-Host "DNS Entries Added to InterfaceIndex $InterfaceIndexNum" -ForegroundColor green
     }
 
     #if Remove was passed to function, run remove DNS entries process
     elseif ($x -eq 'Remove') {
-        Set-DnsClientServerAddress -Interfaceindex $InterfaceIndexNum -ResetServerAddresses
+        Set-DnsClientServerAddress -Interfaceindex $InterfaceIndexNum -ResetServerAddresses -ErrorAction Stop
         #Set-DnsClientServerAddress -Interfaceindex $InterfaceIndexNum -ResetServerAddresses -WhatIf
-        Write-Host "DNS Entries Removed from InterfaceIndex $InterfaceIndexNum, DHCP restored" -ForegroundColor green
+        Write-Host "DNS Entries Removed from InterfaceIndex $InterfaceIndexNum, DHCP restored" -ForegroundColor Green
     }
 
     Get-NetIPConfiguration -InterfaceIndex $InterfaceIndexNum
@@ -47,19 +47,19 @@ do {
 
     #(A)dd DNS Entries
     if ($WhichAction -eq 'A') {
-        Write-Host 'Starting process to Add DNS Entries...'
+        Write-Host 'Starting process to Add DNS Entries...' -ForegroundColor Green
         AddRemove-DNSEntries('Add')
     }
 
     #(R)emove DNS Entries
     elseif ($WhichAction -eq 'R') {
-        Write-Host 'Starting process to Remove DNS Entries and restore DHCP...'
+        Write-Host 'Starting process to Remove DNS Entries and restore DHCP...' -ForegroundColor Green
         AddRemove-DNSEntries('Remove')
     }
 
     #(E)xit the program
     elseif ($WhichAction -eq 'E') {
-        Write-Host "Exiting without performing any actions..."
+        Write-Host "Exiting without performing any actions..." -ForegroundColor Red
         Return
     }    
 
