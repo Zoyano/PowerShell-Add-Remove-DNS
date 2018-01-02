@@ -7,6 +7,7 @@ $Global:DNSEntries = '10.200.160.179', '10.200.160.173', '10.200.200.33', '10.20
 function AddRemove-DNSEntries ($x) {
     #Define Variables
     $InterfaceIndexNum = 0
+    $DefaultIndexNum = Get-DnsClientServerAddress -InterfaceAlias Ethernet -AddressFamily IPv4
 
     #Get-WmiObject win32_networkadapter -filter 'netconnectionstatus = 2' | select NetConnectionid, Name, Interfaceindex, NetConnectionStatus | Out-Host
     
@@ -14,8 +15,13 @@ function AddRemove-DNSEntries ($x) {
     Get-NetAdapter | Where-Object Status -eq 'Up' |
         Select-Object Name, InterfaceDescription, @{Name = "Interfaceindex"; Expression = {$_."ifIndex"}} , Status | Out-Host
 
-    $InterfaceIndexNum = Read-Host "Which Interfaceindex do you want to $x DNS entries for?"
+    $InterfaceIndexNum = Read-Host "Which Interfaceindex do you want to $x DNS entries for (E to default to Ethernet)?"
     Write-Host ""
+
+    #Use InterfaceIndex of Ethernet adapter if user entered E
+    if ($InterfaceIndexNum -eq 'E') {
+        $InterfaceIndexNum = $DefaultIndexNum.InterfaceIndex
+    }
 
     #if Add was passed to function, run add DNS entries process
     if ($x -eq 'Add') {
