@@ -2,6 +2,7 @@ Clear-Host
 
 <#************** Enter List of DNS IP's here for Adding **************#>
 $Global:DNSEntries = '10.200.160.179', '10.200.160.173', '10.200.200.33', '10.200.200.32'
+#$Global:DNSEntries = '10.80.72.4', '10.11.0.23' #Backup for VPN Connection
 
 <#************** Functions **************#>
 function AddRemove-DNSEntries ($x) {
