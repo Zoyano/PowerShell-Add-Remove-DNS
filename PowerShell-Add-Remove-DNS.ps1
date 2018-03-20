@@ -44,7 +44,7 @@ function AddRemove-DNSEntries ($x) {
 <#************** Begin Process **************#>
 # Loops until $WhichAction equals A, R or E
 do {
-    $WhichAction = Read-Host -Prompt 'Do you want to (A)dd/(R)emove DNS entries or (E)xit?'
+    $WhichAction = Read-Host -Prompt 'Do you want to (A)dd/(R)emove/(L)ist DNS entries or (E)xit?'
 
     #(A)dd DNS Entries
     if ($WhichAction -eq 'A') {
@@ -58,6 +58,12 @@ do {
         AddRemove-DNSEntries('Remove')
     }
 
+    #(L)ist DNS Entries
+    elseif ($WhichAction -eq 'L') {
+        Write-Host 'Starting process to List DNS Entries...' -ForegroundColor Green
+        AddRemove-DNSEntries('List')
+    }        
+
     #(E)xit the program
     elseif ($WhichAction -eq 'E') {
         Write-Host "Exiting without performing any actions..." -ForegroundColor Red
@@ -66,9 +72,9 @@ do {
 
     #Error catching
     else {
-        Write-Warning "Invalid entry ""$WhichAction"", please enter A, R, or E..."
+        Write-Warning "Invalid entry ""$WhichAction"", please enter A, R, L, or E..."
     }
-} until ($WhichAction -eq 'A' -or $WhichAction -eq 'R')
+} until ($WhichAction -eq 'A' -or $WhichAction -eq 'R' -or $WhichAction -eq 'L')
 
 Write-Host 'Press Enter to exit...' -ForeGroundColor yellow
 #$x = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
